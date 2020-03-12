@@ -32,13 +32,15 @@ public class starter implements InputControl, InputKeyControl
 		public void onMouseClick(double x, double y){
 			// and/or here
 			// pointControl.addPoint(x,y);
-			ArrayList<Point> points = downloader.readFile("1.csv", 300.0, 300.0, 100.0);
-			System.out.println(points.size());
-			Line l = new Line(300, 300, 300, 600);
+			ArrayList<Point> points = downloader.readFile("1.csv", 300.0, 300.0, 20.0); /* loads points from .csv in form of ArrayList of points 
+																							second snd third numbers are x and y of where the center is going to be at
+																							last number is the acale, now everything is X50 bigger*/
+			System.out.println(points.size());                                        
+			Line l = new Line(300, 300, 300, 600);   // creating a line that indicates drines straright ahead direction
 			l.setColor(new Color(255, 255, 0));
 			l.draw();
-			pointControl.loadArrayList(points);
-			Ellipse center = new Ellipse(297, 297, 6, 6);
+			pointControl.loadArrayList(points);     // loads Arraylist of points into pointCollection class
+			Ellipse center = new Ellipse(297, 297, 6, 6);    // mark center with Cyan dot
 			center.setColor(new Color(25, 255, 255));
 			center.fill();
 			
@@ -81,26 +83,26 @@ public class starter implements InputControl, InputKeyControl
 			// System.out.println("You pressed: " + s);
 			char sc = s.toCharArray()[0];
 			if(sc == 'p')
-				System.out.println(pointControl);
+				System.out.println(pointControl);  // prints array of points
 			else if ((int)(sc) == 10)
 			{
 				pointControl.findEdges();
-				System.out.println("Searching for Edges");
+				System.out.println("Searching for Edges");  // uses loaded array of points to find lines of obstacles
 			}
 			else if (sc == 's')
 			{
-				pointCollection.drawEdges();
+				pointCollection.drawEdges();  // draws lines and start and end points
 				System.out.println("Printed");
 			}
 			else if(sc == 'd')
 			{
-				pointCollection.stepDraw();
+				pointCollection.stepDraw(); // draws lines step by step (not working properly)
 			}
 			else if(sc == 'f')
 			{
 				double vector = pointCollection.findDerectionTo(finaldestination);
 				Line direction = new Line(300, 300, 300+300*Math.cos(Math.toRadians(vector)), 300+300*Math.sin(Math.toRadians(vector)));
-				direction.draw();
+				direction.draw();  // draws straight line path and direction to fly.
 			}
 	
 		}

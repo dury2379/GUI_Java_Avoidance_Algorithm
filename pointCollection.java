@@ -25,24 +25,24 @@ class pointCollection{
 		System.out.println(points.get(points.size()-1));
 	}
 	
-	public void loadArrayList(ArrayList<Point> newPoints)
+	public void loadArrayList(ArrayList<Point> newPoints)  // loads an array list of points
 	{
 		points = newPoints;
 		// System.out.println(newPoints);
 	}
 	
-	public static double findDerectionTo(Point destination)
+	public static double findDerectionTo(Point destination)  // uses loaded array list
 	{
 		double result;
-		double LineA = angle(destination.getX()-ORIGIN.getX(), destination.getY()-ORIGIN.getY());
+		double LineA = angle(destination.getX()-ORIGIN.getX(), destination.getY()-ORIGIN.getY());// straight line path line
 		Line straightPass = new Line(ORIGIN.getX(), ORIGIN.getY(), destination.getX(), destination.getY());
 		straightPass.setColor(new Color(255, 0, 0));
 		straightPass.draw();
-		Point trouble = findClosestPointToLine(LineA);
-		Rectangle troublee = new Rectangle(trouble.getX()-3, trouble.getY()-3, 6, 6);
+		Point trouble = findClosestPointToLine(LineA); // closest point to the straight line path
+		Rectangle troublee = new Rectangle(trouble.getX()-3, trouble.getY()-3, 6, 6);  // mark closest point to the straight line path
 		troublee.setColor(new Color(255, 0, 255));
 		troublee.fill();
-		if(lineToPointDistance(LineA, trouble)>margin||distanceInbetween(ORIGIN, destination)<distanceInbetween(ORIGIN, trouble))
+		if(lineToPointDistance(LineA, trouble)>margin||distanceInbetween(ORIGIN, destination)<distanceInbetween(ORIGIN, trouble)) // if nothing interfers with
 			return LineA;
 		Point closestToDrone = findClosestPointToORIGIN();
 		if(distanceInbetween(ORIGIN, closestToDrone)<margin+0.1)
@@ -68,7 +68,7 @@ class pointCollection{
 		return(best);// DONT FORGET ADJUST!!!!!!!!!!!!!!!!!!!!!!!!
 	}
 	
-	private static double adjust(double angl)
+	private static double adjust(double angl) // changes angle to form for LiDAR
 	{
 		double result = -angl + 90;
 		if(result<0)
@@ -76,7 +76,7 @@ class pointCollection{
 		return result;
 	}
 	
-	private static Point findClosestPointToLine(double angl)
+	private static Point findClosestPointToLine(double angl)  // takes in a ray that goes from the origin at a surtain angle 
 	{
 		System.out.println("You got here");
 		Point result = points.get(0);
