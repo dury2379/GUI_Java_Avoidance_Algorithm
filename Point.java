@@ -1,4 +1,3 @@
-import pkg.*;
 
 class Point{
 
@@ -9,8 +8,6 @@ class Point{
 	int edgeNum = -1;
 	
 	int pointNum;
-	
-	Rectangle dot;
 
 	public Point(double X, double Y, int PointNum)
 	{
@@ -18,8 +15,14 @@ class Point{
 		y = Y;
 		pointNum = PointNum;
 		angle = angle(x, y);
-		dot = new Rectangle(X, Y, 1, 1);
-		dot.fill();
+
+	}
+	
+	public boolean equals(Point otherPoint)
+	{
+		if(x==otherPoint.getX()&&y==otherPoint.getY())
+			return true;
+		return false;
 	}
 	
 	public static double angle(double xe, double ye)
@@ -64,6 +67,11 @@ class Point{
 	public double getAngle()
 	{
 		return angle;
+	}
+	
+	public void setAngle(double Angle)
+	{
+		angle = Angle;
 	}
 	
 	public int getPointNum()

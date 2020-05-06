@@ -21,7 +21,6 @@ public class Loader
 	public ArrayList<Point> readFile(String fileName, double dx, double dy, double scale)
 	{
 		EasyReader in = new EasyReader(fileName);
-		EasyWriter out = new EasyWriter("out.txt");
 		in.readLine();
 		while(in.eof()==false)
 		{
@@ -48,11 +47,11 @@ public class Loader
 				a = Double.parseDouble(in.readWord());
 			}
 			if(counter<1000)
-				System.out.println(primed);
+				// System.out.println(primed);
 			if(azimuth>180&&!primed)
 			{
 				primed = true;
-				System.out.println(azimuth);
+				// System.out.println(azimuth);
 			}
 			
 			if(a==-1&&!(azimuth<180&&primed)&&(Math.abs(x)>1.0&&Math.abs(y)>1.0))
@@ -60,7 +59,7 @@ public class Loader
 				goodPoints.add(new Point((x*scale)+dx, (y*scale)+dy, goodPoints.size()));
 			}
 			counter++;
-			out.println("Angle: " + (angle(x,y)) + ", Azimuth: " + azimuth);
+			// System.out.println("Angle: " + (angle(x,y)) + ", Azimuth: " + azimuth);
 			if(azimuth%90<=2||azimuth%90>=88)
 			{
 				// primed = true;
@@ -74,8 +73,16 @@ public class Loader
 			
 		}
 		in.close();
-		out.close();
 		return goodPoints;
+	}
+	
+	public void clear()
+	{
+		goodPoints = new ArrayList<Point>();
+		markedPoints = new ArrayList<Point>();
+		primed = false;
+	
+		counter = 0;
 	}
 	
 	public ArrayList<Point> getMarkedPoints()

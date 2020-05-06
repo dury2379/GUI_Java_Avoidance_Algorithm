@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import pkg.*;
 
 class Edge
 {
@@ -12,6 +11,8 @@ class Edge
 	
 	int pointNum = 0;
 	
+	double Near0Angle = 10.0;
+	
 	public Edge(Point StartPoint, int EdgeNum, Point origin)
 	{
 		edgeNum = EdgeNum;
@@ -19,6 +20,15 @@ class Edge
 		endPoint = StartPoint;
 		ORIGIN = origin;
 		points.add(startPoint);
+	}
+	
+	public Edge(ArrayList<Point> Points, int EdgeNum, Point origin)
+	{
+		edgeNum = EdgeNum;
+		startPoint = Points.get(0);
+		endPoint = Points.get(Points.size()-1);
+		ORIGIN = origin;
+		points.addAll(Points);
 	}
 	
 	public void addPoint(Point newPoint)
@@ -87,25 +97,6 @@ class Edge
 		points.add(endPoint);
 	}
 
-	public void drawEdge()
-	{
-		for(int i = 0; i < points.size()-1; i++)
-		{
-			Line a = new Line(points.get(i).getX(), points.get(i).getY(), points.get(i+1).getX(), points.get(i+1).getY());
-			a.draw();
-		}
-		
-		Ellipse start = new Ellipse(startPoint.getX()-3, startPoint.getY()-3, 6, 6);
-		start.setColor(new Color(255, 0, 0));
-		start.fill();
-		Ellipse end = new Ellipse(endPoint.getX()-3, endPoint.getY()-3, 6, 6);
-		end.setColor(new Color(0, 0, 255));
-		end.fill();
-		Text num = new Text(startPoint.getX(), startPoint.getY(), " "+edgeNum);
-		num.draw();
-		
-		
-	}
 	
 	public void setEdgeNum(int num)
 	{
@@ -133,18 +124,6 @@ class Edge
 		return edgeNum;
 	}
 	
-	public boolean stepDraw()
-	{
-		System.out.println("fdff");
-		if(pointNum+1<points.size())
-		{
-			Line a = new Line(points.get(pointNum).getX(), points.get(pointNum).getY(), points.get(pointNum+1).getX(), points.get(pointNum+1).getY());
-			a.draw();
-			pointNum++;
-			return true;
-		}
-		return false;
-	}
 	
 	private double distanceInbetween(Point A, Point B)
 	{
@@ -154,14 +133,111 @@ class Edge
 		return distance;
 	}
 	
+	public boolean containsNear0Q1()
+	{
+		for(int i = 0; i < points.size(); i++)
+		{
+			if(points.get(i).getAngle()<=Near0Angle)
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean containsNear0Q4()
+	{
+		for(int i = 0; i < points.size(); i++)
+		{
+			if(points.get(i).getAngle()>=(360.0-Near0Angle))
+				return true;
+		}
+		return false;
+	}
+	
+	public void sortRadialy()
+	{
+		updateAngles();
+		ArrayList<Point> newList = new ArrayList<Point>();
+		while(points.size()>0)
+		{
+			newList.add(points.remove(minAt(points)));
+		}
+		points = newList;
+	}
+	
+	private static int minAt(ArrayList<Point> arr)
+	{
+		int index = 0;
+		double min = arr.get(index).getAngle();
+		for(int i = 0; i < arr.size(); i++)
+		{
+			if(min>arr.get(i).getAngle())
+			{
+				min = arr.get(i).getAngle();
+				index = i;
+			}
+		}
+		return index;
+	}
+	
+	public void MinMaxIsEdgepoints()
+	{
+		startPoint = points.get(0);
+		endPoint = points.get(points.size()-1);
+	}
+	
+	public void Near0edgePoints()
+	{
+		int IndexOfTheStartPoint = findIndexOftheLargestGap();
+		startPoint = points.get(IndexOfTheStartPoint);
+		endPoint = points.get(IndexOfTheStartPoint+1);
+	}
+	
+	private int findIndexOftheLargestGap()
+	{
+		double maxGap = 0;
+		int indesOfTheLargestGap = 0;
+		for(int i = 0; i < points.size()-1; i++)
+		{
+			if(maxGap<Math.abs(points.get(i).getAngle()-points.get(i+1).getAngle()))
+			{
+				maxGap = Math.abs(points.get(i).getAngle()-points.get(i+1).getAngle());
+				indesOfTheLargestGap = i;
+			}
+		}
+		return indesOfTheLargestGap;
+	}
+	
+	private void updateAngles()
+	{
+		for(int i = 0; i < points.size(); i++)
+		{
+			points.get(i).setAngle(angle(points.get(i).getX()-ORIGIN.getX(), points.get(i).getY()-ORIGIN.getY()));
+		}
+	}
+
 	public ArrayList<Point> getPoints()
 	{
 		return points;
 	}
 	
+	public void setPoints(ArrayList<Point> newPoints)
+	{
+		points = newPoints;
+	}
+	
 	public Point getEndPoint()
 	{
 		return endPoint;
+	}
+	
+	public void setEndPoint(Point NewEnd)
+	{
+		endPoint = NewEnd;
+	}
+	
+	public void setStartPoint(Point NewStart)
+	{
+		startPoint = NewStart;
 	}
 	
 	public Point getStartPoint()
@@ -174,4 +250,22 @@ class Edge
 		return points+""+ startPoint + endPoint + "\n";
 	}
 	
+	public static double angle(double xe, double ye)
+	{
+		double angle = 0;
+		if(xe>0.0 && ye>=0.0)
+			angle = Math.toDegrees(Math.atan(ye/xe));
+		if(xe>0.0 && ye<0.0)
+			angle = Math.toDegrees(Math.atan(ye/xe))+360;
+		if(xe<0)
+			angle = Math.toDegrees(Math.atan(ye/xe))+180;
+		if(xe==0)
+		{
+			if(ye<0)
+				angle = 270;
+			if(ye>0)
+				angle = 90;
+		}
+		return angle;
+	}
 }

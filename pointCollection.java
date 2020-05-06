@@ -1,6 +1,5 @@
 import java.util.ArrayList; 
 import java.util.Collections;
-import pkg.*;
 
 class pointCollection{
 	
@@ -12,7 +11,7 @@ class pointCollection{
 	
 	static int DEdgeNum = 0;
 	
-	static Point ORIGIN = new Point(300, 300.0, -1);
+	static Point ORIGIN = new Point(0, 0.0, -1);
 	
 	public pointCollection(double Margin){
 		margin = Margin;
@@ -35,15 +34,9 @@ class pointCollection{
 	{
 		double result;
 		double LineA = angle(destination.getX()-ORIGIN.getX(), destination.getY()-ORIGIN.getY());// straight line path line
-		Line straightPass = new Line(ORIGIN.getX(), ORIGIN.getY(), destination.getX(), destination.getY());
-		straightPass.setColor(new Color(255, 0, 0));
-		straightPass.draw();
+		
 		Point trouble = findClosestPointToLine(LineA); // closest point to the straight line path
-		Rectangle troublee = new Rectangle(trouble.getX()-3, trouble.getY()-3, 6, 6);  // mark closest point to the straight line path
-		troublee.setColor(new Color(255, 0, 255));
-		troublee.fill();
-		if(lineToPointDistance(LineA, trouble)>margin||distanceInbetween(ORIGIN, destination)<distanceInbetween(ORIGIN, trouble)) // if nothing interfers with
-			return LineA;
+		
 		Point closestToDrone = findClosestPointToORIGIN();
 		if(distanceInbetween(ORIGIN, closestToDrone)<margin+0.1)
 		{
@@ -54,10 +47,16 @@ class pointCollection{
 			// result = adjust(result);
 			return result;
 		}
-		ArrayList<Double> possiblePath = findPathsAround(trouble);
+		if(lineToPointDistance(LineA, trouble)>margin||distanceInbetween(ORIGIN, destination)<distanceInbetween(ORIGIN, trouble))// if nothing interfers with straight line path then fly in straight line
+		{
+			result = LineA; // !!!!!!!!!!!!!!!!!!!!!!!!!!DO NOT FORGET ADJUST
+			// result = adjust(LineA);
+			return result;
+		}
+		ArrayList<Double> possiblePath = findPathsAround(trouble); // finds possible paths
 		int locationOfTheBest = 0;
 		double best = possiblePath.get(0);
-		for(int i = 0; i < possiblePath.size(); i++)
+		for(int i = 0; i < possiblePath.size(); i++)   // find the best path
 		{
 			if(Math.abs(possiblePath.get(i)-LineA)<Math.abs(possiblePath.get(locationOfTheBest)-LineA))
 			{
@@ -66,6 +65,7 @@ class pointCollection{
 			}
 		}
 		return(best);// DONT FORGET ADJUST!!!!!!!!!!!!!!!!!!!!!!!!
+		// returns the best path
 	}
 	
 	private static double adjust(double angl) // changes angle to form for LiDAR
@@ -106,8 +106,8 @@ class pointCollection{
 		return result;
 	}
 	
-	private static ArrayList<Double> findPathsAround(Point p)
-	{
+	private static ArrayList<Double> findPathsAround(Point p)  // finds four possible patts around an edge s for end point 2 for start point.
+	{														   // Then remove the two that are intersecting with the edge
 		ArrayList<Double> result = new ArrayList<Double>(); 
 		int edgeNumb = p.getEdgeNum();
 		double angl1 = angle(edges.get(edgeNumb).getStartPoint().getX()-ORIGIN.getX(), edges.get(edgeNumb).getStartPoint().getY()-ORIGIN.getY());
@@ -129,8 +129,8 @@ class pointCollection{
 		return result;
 	}
 	
-	private static double diviation(Point p)
-	{
+	private static double diviation(Point p) // calculates the angle that should be added or subtracted 
+	{										//  in order to passon the borderline of margin of start or end point.
 		if((margin)/(distanceInbetween(ORIGIN, p))>0.5)
 		{
 			System.out.println("over here");
@@ -139,7 +139,7 @@ class pointCollection{
 		return (Math.toDegrees(Math.asin((margin)/(distanceInbetween(ORIGIN, p)))));
 	}
 	
-	private static Point findClosestPointToORIGIN()
+	private static Point findClosestPointToORIGIN() // finds closest point to the origin
 	{
 		Point result = points.get(0);
 		for(int i = 0; i < points.size(); i++)
@@ -150,85 +150,89 @@ class pointCollection{
 		return result;
 	}
 	
-	public void findEdges()
+	public void findEdges()  // 
 	{
-		int edgeNum = 0;
 		
-		edges = new ArrayList<Edge>();
-		edges.add(new Edge(points.get(0), edgeNum, ORIGIN));
-		points.get(0).setEdgeNum(edgeNum);
+		
 		// System.out.println(edges + "vvv\n");
-		for(int i = 0; i < points.size(); i++)
+		combinePointsProximityWise();
+		checkEdges();
+		SortRadialyAllEdges();
+		ArrayList<Integer> bannedIndesis = new ArrayList<Integer>();
+		bannedIndesis = findAllNear0s();
+		System.out.println(bannedIndesis);
+		setEdgePointsForLeagals(bannedIndesis);
+		// drawEdges();
+		// System.out.println(edges);
+	}
+	
+	private void setEdgePointsForLeagals(ArrayList<Integer> banned)
+	{
+		for(int i = 0; i < edges.size(); i++)
 		{
-			int next = findNextFrom(i);
-			// System.out.println("next is: " + next);
-			if(next>i)
+			if(!banned.contains(i))
 			{
-				edges.get(edgeNum).addPoint(points.get(next));
-				// System.out.println(edges.get(edgeNum).addPoint(points.get(next))+""+next+ "  " +distance(points.get(i), points.get(next)));
-				points.get(next).setEdgeNum(edgeNum);
-				i = next-1;
-				// System.out.println("mmm" + next);
+				edges.get(i).MinMaxIsEdgepoints();
 			}
 			else
 			{
-				if(next==-1&&i!=points.size()-1)
-				{
-					edgeNum = edges.size();
-					edges.add(new Edge(points.get(i+1), edgeNum, ORIGIN));
-					points.get(i+1).setEdgeNum(edgeNum);
-					// System.out.println("One");
-				}
-				else
-				{
-					if(next<i&&next!=-1)
-					{
-						RemoveAllEdgesPriorTo(next);
-						System.out.println(next + " edge num " + points.get(next).getEdgeNum());
-						if(points.get(next).getEdgeNum()==-1)
-						{
-							edges.get(edgeNum).addPoint(points.get(next));
-							points.get(next).setEdgeNum(edgeNum);
-							i=points.size();
-							// System.out.println("two" + next);
-						}
-						else
-						{
-							combineEdges(points.get(next).getEdgeNum(), edges.size()-1);
-							i=points.size();
-							// System.out.println("three"+next);
-						}
-					}
-				}
+				edges.get(i).Near0edgePoints();
+			}
+		}
+	}
+	
+	private ArrayList<Integer> findAllNear0s()
+	{
+		ArrayList<Integer> indesis = new ArrayList<Integer>();
+		for(int i = 0; i < edges.size(); i++)
+		{
+			if(edges.get(i).containsNear0Q1()&&edges.get(i).containsNear0Q4())
+				indesis.add(i);
+		}
+		return indesis;
+	}
+	
+	private void combinePointsProximityWise()
+	{
+		int edgeNum = 0;
+		edges = new ArrayList<Edge>();
+		
+		while(anyFreePoits())
+		{
+			Point freePoint = findFreePoint();
+			freePoint.setEdgeNum(edgeNum);
+			ArrayList<Point> newEdge = findGroupAround(freePoint, edgeNum);
+			newEdge.add(freePoint);
+			edges.add(new Edge(newEdge, edgeNum, ORIGIN));
+			edgeNum++;
+		}
+	}
+	
+	private ArrayList<Point> findGroupAround(Point centerPoint, int edgeNumber)
+	{
+		ArrayList<Point> result = new ArrayList<Point>();
+		for(int i = 0; i < points.size(); i++)
+		{
+			if(distanceInbetween(centerPoint, points.get(i))<=margin*2&&!centerPoint.equals(points.get(i))&&points.get(i).getEdgeNum()==-1)
+			{
+				result.add(points.get(i));
+				points.get(i).setEdgeNum(edgeNumber);
 			}
 				
-			// System.out.println(j);
-			
-			// if(i<points.size()-1)
-			// {
-				// if(distanceInbetween(points.get(i),points.get(i+1))<=margin*2.0)
-				// {
-					// edges.get(edges.size()-1).addPoint(points.get(i+1));
-					// points.get(i+1).setEdgeNum(edgeNum);
-				// }
-				// else
-				// {
-					// edgeNum = edges.size();
-					// edges.add(new Edge(points.get(i+1), edgeNum));
-					// points.get(i+1).setEdgeNum(edgeNum);
-				// }
-			// }
-			// else
-			// {
-				// if(distanceInbetween(points.get(i),points.get(0))<=margin*2.0)
-				// {
-					// combineEdges(0, edges.size()-1);
-				// }
-			// }
 		}
-		checkEdges();
-		// drawEdges();
-		// System.out.println(edges);
+		for(int i = 0; i < result.size(); i++)
+		{
+			result.addAll(findGroupAround(result.get(i), edgeNumber));
+		}
+		return result;
+	}
+	
+	private void SortRadialyAllEdges()
+	{
+		for(int i = 0; i < edges.size(); i++)
+		{
+			edges.get(i).sortRadialy();
+		}
 	}
 	
 	public void combineEdges(int edgeNumA, int edgeNumB)
@@ -393,19 +397,14 @@ class pointCollection{
 		}
 	}
 	
-	public static void stepDraw()
+	private boolean anyFreePoits()
 	{
-		if(DEdgeNum<edges.size()&&!edges.get(DEdgeNum).stepDraw())
-			DEdgeNum++;
-	}
-
-	public static void drawEdges()
-	{
-		for(int i = 0; i < edges.size(); i++)
+		for(int i = 0; i < points.size(); i++)
 		{
-			edges.get(i).drawEdge();
+			if(points.get(i).getEdgeNum()==-1)
+				return true;
 		}
-		
+		return false;
 	}
 	
 	private Point findFreePoint()
@@ -434,8 +433,14 @@ class pointCollection{
 		// return distance;
 	// }
 	
+	public void clear()
+	{
+		edges.clear();
+		points.clear();
+	}
+	
 	public String toString()
 	{
-		return edges + "";
+		return edges + "\n Points: " + points;
 	}
 }
